@@ -11,6 +11,10 @@ models:
         tests:
           - unique
           - not_null
+      - name: lead_created_date
+        description: unified date for inbound/outbound reps based on form submission date or first sales contact
+        tests:
+          - not_null
       - name: channel
         description: "Derived: 'inbound' if form_submission_date exists, else 'outbound'."
         tests:

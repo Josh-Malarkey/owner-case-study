@@ -19,6 +19,10 @@ sources:
             tests:
               - unique
               - not_null
+          - name: form_submission_date
+            description: date inbound form was submitted
+            tests:
+              - not_null
 
       - name: opportunities
         description: >
