@@ -1,0 +1,9 @@
+gtm_case_josh:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      role: DE_CASE_JOSHMALARKEY22_ROLE
+      warehouse: CASE_WH
+      database: DEMO_DB
+      schema: DE_CASE_JOSHMALARKEY22_SCHEMA
