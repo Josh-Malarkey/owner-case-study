@@ -6,6 +6,14 @@ Analysis of Owner.com's go-to-market data across funnel conversion, account LTV,
 
 ---
 
+### Executive Summary
+
+These two opportunities compound each other. Fixing outbound's contact-to-meeting rate from 4% → 8% would roughly double outbound wins (from ~17/mo to ~34/mo) while halving outbound CAC and unlocking higher-LTV accounts that outbound is uniquely positioned to target. 
+
+Simultaneously, reallocating ~$15K/mo of outbound headcount spend into inbound ad budget could yield ~15-20 additional inbound wins/month at current efficiency (~$730-$1,130 ad spend per won deal). These combined initiatives add ~30 incremental wins/month on a current base of ~80-120 (total accounts won across both channels), representing a ~30% lift within a year while improving blended CAC:LTV from ~9x toward 11-13x as the mix shifts toward the more efficient inbound channel.
+
+---
+
 ### Opportunity 1: Fix the Outbound Funnel Bottleneck (Contact → Meeting Conversion)
 
 This is the single highest-leverage fix. Outbound generates ~2x the lead volume of inbound but converts at 1/10th the rate to close. The data shows exactly where value is destroyed:
@@ -44,11 +52,3 @@ Outbound is consuming $38K-$50K/month in people cost while producing only 8-25 a
 - The current inbound efficiency is ~$730-$1,130 in ad spend per won deal (derived from $55-68K monthly ad spend and 50-79 accounts closed-won), and an incremental $15K/month in ad spend could yield ~15-20 additional accounts wons/month, a ~25-30% lift on current inbound volume
 - Monitor inbound CAC closely for diminishing returns as spend scales — the Jan-May data shows CAC remained stable ($1,249-$1,389) across varying spend levels, suggesting room to grow before saturation
 - Use the payback period advantage (~2 months inbound vs ~4 months outbound) to reinvest recovered cash into further growth quarters ahead
-
----
-
-### Executive Summary
-
-These two opportunities compound each other. Fixing outbound's contact-to-meeting rate from 4% → 8% would roughly double outbound wins (from ~17/mo to ~34/mo) while halving outbound CAC and unlocking higher-LTV accounts that outbound is uniquely positioned to target. 
-
-Simultaneously, reallocating ~$15K/mo of outbound headcount spend into inbound ad budget could yield ~15-20 additional inbound wins/month at current efficiency (~$730-$1,130 ad spend per won deal). These combined initiatives add ~30 incremental wins/month on a current base of ~80-120 (total accounts won across both channels), representing a ~30% lift within a year while improving blended CAC:LTV from ~9x toward 11-13x as the mix shifts toward the more efficient inbound channel.
