@@ -40,7 +40,7 @@ final as (
             count_if(first_contact_date is not null)
         ) as rate_contact_to_meeting,
         div0(
-            count_if(is_converted),
+            count_if(is_converted and first_meeting_booked_date is not null),
             count_if(first_meeting_booked_date is not null)
         ) as rate_meeting_to_opportunity,
         div0(
