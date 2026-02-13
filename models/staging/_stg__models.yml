@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: stg_leads
+    description: >
+      Cleaned and typed lead records with channel classification.
+      Inbound leads have a form_submission_date; outbound leads do not.
+    columns:
+      - name: lead_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: channel
+        description: "Derived: 'inbound' if form_submission_date exists, else 'outbound'."
+        tests:
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: predicted_monthly_sales
+        description: >
+          Numeric parse of predicted_sales_with_owner. Null if unparseable.
+
+  - name: stg_opportunities
+    description: >
+      Cleaned opportunity records with stage categorization and velocity fields.
+    columns:
+      - name: opportunity_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: stage_category
+        description: "Simplified stage: closed_won, closed_lost, or open."
+        tests:
+          - accepted_values:
+              values: ['closed_won', 'closed_lost', 'open']
+
+  - name: stg_expenses_advertising
+    description: Monthly advertising spend parsed to numeric.
+    columns:
+      - name: expense_month
+        description: First of month date, parsed from string.
+        tests:
+          - not_null
+
+  - name: stg_expenses_salary
+    description: Monthly salary/commission costs by team, parsed to numeric.
+    columns:
+      - name: expense_month
+        description: First of month date, parsed from string.
+        tests:
+          - not_null

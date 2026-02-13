@@ -1,0 +1,48 @@
+version: 2
+
+sources:
+  - name: gtm_case
+    database: demo_db
+    schema: gtm_case
+    description: >
+      Raw GTM data from Salesforce and finance systems for Owner.com's
+      go-to-market analytics.
+
+    tables:
+      - name: leads
+        description: >
+          Salesforce leads representing prospects prior to demo booking.
+          Covers both inbound (form submission) and outbound (BDR-sourced) channels.
+        columns:
+          - name: lead_id
+            description: Primary key for the lead record.
+            tests:
+              - unique
+              - not_null
+
+      - name: opportunities
+        description: >
+          Salesforce opportunities created after a demo is booked.
+          Tracks pipeline stages through close-won or close-lost.
+        columns:
+          - name: opportunity_id
+            description: Primary key for the opportunity record.
+            tests:
+              - unique
+              - not_null
+
+      - name: expenses_advertising
+        description: >
+          Monthly advertising spend (Facebook + Google Ads).
+          Drives the inbound channel exclusively.
+        columns:
+          - name: month
+            description: Month of spend in string format.
+
+      - name: expenses_salary_and_commissions
+        description: >
+          Monthly salary and commission costs broken out by
+          outbound vs inbound sales teams.
+        columns:
+          - name: month
+            description: Month of expense in string format.

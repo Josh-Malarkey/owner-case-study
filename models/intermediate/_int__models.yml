@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: int_lead_opportunity_joined
+    description: >
+      Joins leads to their converted opportunities to create a single
+      record per prospect journey from lead creation through close.
+      Grain: one row per lead.
+    columns:
+      - name: lead_id
+        description: Primary key — one row per lead.
+        tests:
+          - unique
+          - not_null
+      - name: channel
+        tests:
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: opportunity_id
+        description: >
+          Foreign key to stg_opportunities. Null when lead has not converted.
+        tests:
+          - relationships:
+              to: ref('stg_opportunities')
+              field: opportunity_id
+
+  - name: int_monthly_expenses
+    description: >
+      Combines advertising and salary/commission expenses into a single
+      monthly view by channel, using a date spine to ensure no gaps.
+      Grain: one row per month per channel.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - expense_month
+            - channel
+      - assert_advertising_spend_matches_source
+      - assert_inbound_salary_matches_source
+      - assert_outbound_salary_matches_source
+    columns:
+      - name: expense_month
+        description: First of month date.
+        tests:
+          - not_null
+      - name: channel
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: total_cost
+        description: >
+          Total cost for the channel in that month.
+          For inbound: advertising + people. For outbound: people only.
+        tests:
+          - not_null
+      - name: advertising_cost
+        tests:
+          - not_null
+      - name: people_cost
+        tests:
+          - not_null

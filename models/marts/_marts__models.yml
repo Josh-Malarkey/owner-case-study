@@ -1,0 +1,422 @@
+version: 2
+
+models:
+  - name: fct_lead_funnel
+    description: >
+      One row per lead representing the full prospect journey from lead
+      creation through opportunity close. Core fact table for funnel analysis,
+      activity efficiency, and lead-level LTV estimation.
+    columns:
+      - name: lead_id
+        description: Primary key — one row per lead.
+        tests:
+          - unique
+          - not_null
+      - name: opportunity_id
+        description: Foreign key to the converted opportunity. Null if lead was not converted.
+      - name: account_id
+        description: Foreign key to the account associated with the opportunity.
+      - name: channel
+        description: Acquisition channel — inbound (form submission) or outbound (no form submission).
+        tests:
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: lead_status
+        description: Current CRM lead status.
+      - name: current_funnel_stage
+        description: Derived funnel stage based on the furthest milestone reached.
+        tests:
+          - accepted_values:
+              values:
+                - new_lead
+                - contacted
+                - meeting_booked
+                - opportunity_open
+                - closed_won
+                - closed_lost
+      - name: opportunity_stage_name
+        description: Raw opportunity stage name from CRM.
+      - name: opportunity_stage_category
+        description: Standardized stage category — closed_won, closed_lost, or open.
+      - name: lost_reason
+        description: Reason for loss on closed-lost opportunities.
+      - name: closed_lost_notes
+        description: Free-text notes on why the deal was lost.
+      - name: business_issue
+        description: Primary business issue the prospect was trying to solve.
+      - name: attribution_source
+        description: Self-reported attribution — how the prospect heard about Owner.
+      - name: cuisine_types
+        description: Comma-separated list of cuisine types for the restaurant.
+      - name: cuisine_count
+        description: Number of characters in cuisine_types string.
+      - name: marketplaces_used
+        description: Third-party marketplaces the restaurant uses.
+      - name: online_ordering_used
+        description: Whether the restaurant currently uses online ordering.
+      - name: location_count
+        description: Number of restaurant locations.
+      - name: connected_with_decision_maker
+        description: Whether sales connected with the decision maker.
+      - name: is_converted
+        description: Boolean — whether the lead was converted to an opportunity.
+      - name: demo_held
+        description: Boolean — whether a demo was completed.
+      - name: is_closed_won
+        description: Boolean — whether the opportunity was closed-won.
+      - name: is_closed_lost
+        description: Boolean — whether the opportunity was closed-lost.
+      - name: form_submission_date
+        description: Date the lead submitted an inbound form.
+      - name: first_sales_call_date
+        description: Date of the first sales call to the lead.
+      - name: first_text_sent_date
+        description: Date of the first text message sent to the lead.
+      - name: first_meeting_booked_date
+        description: Date a meeting was first booked with the lead.
+      - name: first_contact_date
+        description: Earliest of first sales call, first text, or first email.
+      - name: demo_set_date
+        description: Date the demo was scheduled.
+      - name: demo_time
+        description: Timestamp of the demo.
+      - name: demo_date
+        description: Date the demo was held.
+      - name: opportunity_created_date
+        description: Date the opportunity record was created.
+      - name: close_date
+        description: Date the opportunity was closed (won or lost).
+      - name: last_sales_activity_date
+        description: Date of the most recent sales activity on the lead.
+      - name: lead_created_date
+        description: Date the lead record was created.
+      - name: lead_created_month
+        description: Truncated lead_created_date to month for cohort analysis.
+      - name: sales_call_count
+        description: Total number of sales calls made to this lead.
+      - name: sales_text_count
+        description: Total number of text messages sent to this lead.
+      - name: sales_email_count
+        description: Total number of sales emails sent to this lead.
+      - name: total_activity_count
+        description: Sum of all sales activities (calls + texts + emails).
+      - name: days_lead_to_first_contact
+        description: Days from lead creation to first sales contact.
+      - name: days_contact_to_meeting
+        description: Days from first contact to first meeting booked.
+      - name: days_meeting_booked_to_demo_set
+        description: Days from meeting booked to demo scheduled.
+      - name: days_demo_set_to_held
+        description: Days from demo scheduled to demo held.
+      - name: days_demo_held_to_close
+        description: Days from demo held to opportunity close.
+      - name: days_lead_to_opportunity
+        description: Days from lead creation to opportunity creation.
+      - name: days_to_close
+        description: Days from opportunity creation to close.
+      - name: days_lead_to_close
+        description: Days from lead creation to opportunity close.
+      - name: days_last_activity_to_close
+        description: Days from last sales activity to close.
+      - name: predicted_monthly_sales
+        description: Predicted monthly sales volume for the restaurant.
+      - name: predicted_monthly_transaction_revenue
+        description: Estimated monthly transaction revenue (5% take rate on predicted sales).
+      - name: monthly_subscription_revenue
+        description: Fixed monthly subscription revenue ($500).
+      - name: predicted_monthly_total_revenue
+        description: Sum of subscription and transaction revenue per month.
+      - name: estimated_ltv_24mo
+        description: >
+          24-month LTV estimate for closed-won deals:
+          ($500 subscription + 5% of predicted_monthly_sales) * 24.
+
+  - name: fct_account_ltv
+    description: >
+      Account-level lifetime value estimates for closed-won accounts.
+      Aggregates won deals, revenue components, and LTV projections.
+      Grain: one row per account_id per channel.
+    columns:
+      - name: account_id
+        description: Primary key — one row per account per channel.
+        tests:
+          - not_null
+      - name: channel
+        description: Acquisition channel for this account.
+        tests:
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: total_won_deals
+        description: Number of closed-won opportunities for this account.
+      - name: avg_predicted_monthly_sales
+        description: Average predicted monthly sales across won deals.
+      - name: avg_monthly_transaction_revenue
+        description: Average monthly transaction revenue (5% take rate) across won deals.
+      - name: avg_monthly_subscription_revenue
+        description: Average monthly subscription revenue ($500) across won deals.
+      - name: avg_monthly_total_revenue
+        description: Average total monthly revenue (subscription + transaction) per deal.
+      - name: total_monthly_revenue
+        description: Sum of predicted monthly total revenue across all won deals.
+      - name: total_estimated_ltv_24mo
+        description: >
+          Sum of 24-month LTV estimates across all won deals for this account.
+      - name: avg_estimated_ltv_per_deal
+        description: Average 24-month LTV per won deal.
+      - name: location_count
+        description: Maximum location count across won deals for this account.
+      - name: cuisine_types
+        description: Cuisine types associated with this account.
+      - name: marketplaces_used
+        description: Third-party marketplaces used by this account.
+      - name: online_ordering_used
+        description: Whether this account uses online ordering.
+      - name: first_lead_created_date
+        description: Earliest lead creation date across won deals.
+      - name: first_close_date
+        description: Earliest close date across won deals.
+      - name: latest_close_date
+        description: Most recent close date across won deals.
+      - name: avg_days_lead_to_close
+        description: Average days from lead creation to close across won deals.
+      - name: avg_days_demo_held_to_close
+        description: Average days from demo held to close across won deals.
+
+  - name: fct_channel_economics
+    description: >
+      Monthly channel-level acquisition costs, conversion rates, and
+      velocity metrics. CAC is computed as total cost / closed-won deals.
+      Grain: month x channel.
+    columns:
+      - name: outcome_month
+        description: Month of lead creation (cohort month).
+        tests:
+          - not_null
+      - name: channel
+        description: Acquisition channel.
+        tests:
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: total_leads
+        description: Total leads created in this month and channel.
+      - name: converted_leads
+        description: Leads that converted to opportunities.
+      - name: demos_held
+        description: Number of demos completed.
+      - name: closed_won_deals
+        description: Number of closed-won opportunities.
+      - name: closed_lost_deals
+        description: Number of closed-lost opportunities.
+      - name: total_cost
+        description: Total acquisition cost (advertising + people) for the month and channel.
+      - name: advertising_cost
+        description: Advertising spend for the month and channel.
+      - name: people_cost
+        description: Sales team salary and commission cost for the month and channel.
+      - name: lead_to_opportunity_rate
+        description: Conversion rate from lead to opportunity.
+      - name: opportunity_to_demo_rate
+        description: Conversion rate from opportunity to demo held.
+      - name: demo_to_close_rate
+        description: Conversion rate from demo held to closed-won.
+      - name: lead_to_close_rate
+        description: End-to-end conversion rate from lead to closed-won.
+      - name: cac
+        description: Customer acquisition cost — total cost / closed-won deals.
+      - name: avg_days_to_first_contact
+        description: Average days from lead creation to first sales contact.
+      - name: avg_days_contact_to_meeting
+        description: Average days from first contact to meeting booked.
+      - name: avg_days_meeting_to_demo_set
+        description: Average days from meeting booked to demo scheduled.
+      - name: avg_days_demo_set_to_held
+        description: Average days from demo scheduled to demo held.
+      - name: avg_days_demo_held_to_close
+        description: Average days from demo held to close.
+      - name: avg_days_lead_to_opportunity
+        description: Average days from lead creation to opportunity creation.
+      - name: avg_days_opp_to_close
+        description: Average days from opportunity creation to close.
+      - name: avg_days_lead_to_close
+        description: Average days from lead creation to close.
+      - name: avg_days_last_activity_to_close
+        description: Average days from last sales activity to close.
+      - name: avg_activities_per_lead
+        description: Average total activities per lead.
+      - name: avg_activities_per_won_deal
+        description: Average total activities per closed-won deal.
+
+  - name: fct_funnel_stage_conversion
+    description: >
+      Stage-to-stage conversion rates and velocity by cohort month
+      and channel. Supports funnel drop-off and time-in-stage analysis.
+    columns:
+      - name: lead_created_month
+        description: Cohort month based on lead creation date.
+        tests:
+          - not_null
+      - name: channel
+        description: Acquisition channel.
+        tests:
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: total_leads
+        description: Total leads in this cohort and channel.
+      - name: contacted
+        description: Leads that received at least one sales contact.
+      - name: connected_dm
+        description: Leads where sales connected with the decision maker.
+      - name: meetings_booked
+        description: Leads with at least one meeting booked.
+      - name: opportunities_created
+        description: Leads that converted to opportunities.
+      - name: demos_held
+        description: Opportunities that completed a demo.
+      - name: closed_won
+        description: Opportunities that closed-won.
+      - name: closed_lost
+        description: Opportunities that closed-lost.
+      - name: rate_lead_to_contact
+        description: Conversion rate from lead to first contact.
+      - name: rate_contact_to_dm
+        description: Conversion rate from contact to decision maker connection.
+      - name: rate_contact_to_meeting
+        description: Conversion rate from contact to meeting booked.
+      - name: rate_meeting_to_opportunity
+        description: Conversion rate from meeting to opportunity creation.
+      - name: rate_opportunity_to_demo
+        description: Conversion rate from opportunity to demo held.
+      - name: rate_demo_to_close
+        description: Conversion rate from demo to closed-won.
+      - name: rate_lead_to_close
+        description: End-to-end conversion rate from lead to closed-won.
+      - name: avg_days_lead_to_contact
+        description: Average days from lead creation to first contact.
+      - name: avg_days_contact_to_meeting
+        description: Average days from first contact to meeting booked.
+      - name: avg_days_meeting_to_demo_set
+        description: Average days from meeting booked to demo scheduled.
+      - name: avg_days_demo_set_to_held
+        description: Average days from demo scheduled to demo held.
+      - name: avg_days_demo_held_to_close
+        description: Average days from demo held to close.
+      - name: avg_days_lead_to_opportunity
+        description: Average days from lead creation to opportunity creation.
+      - name: avg_days_opp_to_close
+        description: Average days from opportunity creation to close.
+      - name: avg_days_lead_to_close
+        description: Average days from lead creation to close.
+      - name: avg_days_last_activity_to_close
+        description: Average days from last sales activity to close.
+
+  - name: fct_loss_reason_analysis
+    description: >
+      Aggregated loss reasons for closed-lost opportunities by month
+      and channel. Identifies top reasons deals are lost.
+    columns:
+      - name: lead_created_month
+        description: Cohort month based on lead creation date.
+      - name: channel
+        description: Acquisition channel.
+      - name: lost_reason
+        description: Categorized loss reason. Defaults to 'Unknown / Not Specified' when null.
+      - name: lost_count
+        description: Number of closed-lost deals for this reason, month, and channel.
+      - name: pct_of_channel_losses
+        description: Percentage of total losses in this month and channel attributed to this reason.
+      - name: avg_activities_before_loss
+        description: Average total activities before the deal was lost — indicates effort level.
+      - name: avg_days_to_loss
+        description: Average days from lead creation to close-lost.
+      - name: avg_predicted_sales_lost
+        description: Average predicted monthly sales of lost deals — indicates revenue impact.
+
+  - name: fct_activity_efficiency
+    description: >
+      Activity volume and efficiency metrics (calls, texts, emails)
+      by channel, outcome, and cohort month. Answers "how many touches
+      does it take to close a deal?"
+    columns:
+      - name: lead_created_month
+        description: Cohort month based on lead creation date.
+      - name: channel
+        description: Acquisition channel.
+      - name: outcome
+        description: Current funnel stage used as the outcome grouping.
+      - name: lead_count
+        description: Number of leads in this cohort, channel, and outcome.
+      - name: total_calls
+        description: Total sales calls across all leads in this group.
+      - name: total_texts
+        description: Total text messages across all leads in this group.
+      - name: total_emails
+        description: Total sales emails across all leads in this group.
+      - name: total_activities
+        description: Total activities (calls + texts + emails) across all leads.
+      - name: avg_calls_per_lead
+        description: Average sales calls per lead.
+      - name: avg_texts_per_lead
+        description: Average text messages per lead.
+      - name: avg_emails_per_lead
+        description: Average sales emails per lead.
+      - name: avg_activities_per_lead
+        description: Average total activities per lead.
+      - name: avg_days_to_first_contact
+        description: Average days from lead creation to first contact.
+      - name: avg_days_contact_to_meeting
+        description: Average days from first contact to meeting booked.
+      - name: avg_days_meeting_to_demo_set
+        description: Average days from meeting booked to demo scheduled.
+      - name: avg_days_demo_set_to_held
+        description: Average days from demo scheduled to demo held.
+      - name: avg_days_demo_held_to_close
+        description: Average days from demo held to close.
+      - name: avg_days_lead_to_opportunity
+        description: Average days from lead creation to opportunity creation.
+      - name: avg_days_to_close
+        description: Average days from lead creation to close.
+      - name: avg_days_last_activity_to_close
+        description: Average days from last sales activity to close.
+      - name: avg_ltv_won_deals
+        description: Average 24-month LTV for closed-won deals in this group. Null for non-won outcomes.
+
+  - name: fct_unit_economics
+    description: >
+      Combines channel-level CAC from fct_channel_economics with
+      account-level LTV from fct_account_ltv to compute CAC:LTV ratios
+      and payback periods. Grain: month x channel.
+    columns:
+      - name: outcome_month
+        description: Cohort month for CAC; close month for LTV.
+        tests:
+          - not_null
+      - name: channel
+        description: Acquisition channel.
+        tests:
+          - accepted_values:
+              values: ['inbound', 'outbound']
+      - name: total_leads
+        description: Total leads created in this month and channel (from fct_channel_economics).
+      - name: closed_won_deals
+        description: Closed-won deals in this month and channel (from fct_channel_economics).
+      - name: total_cost
+        description: Total acquisition cost for this month and channel.
+      - name: cac
+        description: Customer acquisition cost — total cost / closed-won deals.
+      - name: lead_to_close_rate
+        description: End-to-end conversion rate from lead to closed-won.
+      - name: accounts_won
+        description: Number of accounts with closed-won deals in this month and channel (from fct_account_ltv).
+      - name: total_ltv_24mo
+        description: Sum of 24-month LTV across all accounts won in this month and channel.
+      - name: avg_ltv_per_account
+        description: Average 24-month LTV per account won.
+      - name: avg_monthly_revenue_per_account
+        description: Average monthly total revenue per account won.
+      - name: ltv_to_cac_ratio
+        description: >
+          Average LTV per account divided by CAC. Values above 3 are
+          generally considered strong.
+      - name: payback_period_months
+        description: >
+          Months to recover CAC from average monthly revenue per account.
